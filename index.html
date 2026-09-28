@@ -7,8 +7,7 @@
 <meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>Складська Система Відбору & Синхронізація</title>
+<title>Складський Відбір</title>
 
 <!-- Firebase Realtime Database SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -20,20 +19,17 @@ html,body{margin:0;width:100%;height:100%;background:#000;color:#f5f5f7;font-fam
 body{display:flex;justify-content:center}
 .app{width:100%;max-width:500px;height:100dvh;padding:8px 12px max(8px,env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden;position:relative}
 
-/* Статус онлайн-синхронізації */
 .syncStatus{font-size:11px;padding:5px 8px;border-radius:8px;text-align:center;margin-bottom:6px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
 .syncStatus.online{background:#122a1b;color:#34c759;border:1px solid #1e522d}
 .syncStatus.offline{background:#2a1212;color:#ff3b30;border:1px solid #521e1e}
 
-/* Перемикач вкладок */
 .tabs{display:flex;gap:6px;margin-bottom:8px;flex:none}
-.tabBtn{flex:1;padding:8px;border:0;border-radius:12px;background:#1c1c1e;color:#8e8e93;font-size:13px;font-weight:600;touch-action:none;cursor:pointer;text-align:center}
+.tabBtn{flex:1;padding:8px;border:0;border-radius:12px;background:#1c1c1e;color:#8e8e93;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
 .tabBtn.active{background:#ff7a00;color:#fff}
 
 .view{display:none;flex-direction:column;flex:1;overflow:hidden}
 .view.active{display:flex}
 
-/* Панель налаштувань сесії та напрямку */
 .sessionCard{background:#1c1c1e;border-radius:14px;padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;flex:none}
 .formRow{display:flex;gap:8px;align-items:center}
 .formInput{flex:1;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;padding:8px 10px;color:#fff;font-size:13px;outline:none}
@@ -42,29 +38,26 @@ body{display:flex;justify-content:center}
 
 .top{height:36px;display:flex;justify-content:space-between;align-items:flex-start;flex:none}
 .info{font-size:13px;line-height:1.3;color:#9a9a9f}
-.historyBtn{border:0;border-radius:14px;background:#242426;color:#eee;padding:6px 12px;font-size:12px;touch-action:none;cursor:pointer}
+.historyBtn{border:0;border-radius:14px;background:#242426;color:#eee;padding:6px 12px;font-size:12px;cursor:pointer}
 
 .topRightWrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.suspiciousBox{display:none;background:#2a1215;border:1px solid #ff3b30;border-radius:12px;padding:6px 10px;text-align:right;max-width:210px;animation:shake 0.3s ease-in-out}
+.suspiciousBox{display:none;background:#2a1215;border:1px solid #ff3b30;border-radius:12px;padding:6px 10px;text-align:right;max-width:210px}
 .suspiciousBox.show{display:block}
 .suspiciousTitle{font-size:11px;color:#ff6b63;font-weight:bold;margin-bottom:2px}
 .suspiciousValue{font-size:14px;color:#fff;font-weight:bold}
 .suspiciousBtns{display:flex;gap:6px;margin-top:4px;justify-content:flex-end}
-.suspBtn{border:0;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:bold;touch-action:none;cursor:pointer}
+.suspBtn{border:0;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:bold;cursor:pointer}
 .suspBtn.confirm{background:#34c759;color:#fff}
 .suspBtn.fix{background:#ff3b30;color:#fff}
 
-@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
-
 .displayWrap{flex:1;min-height:50px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;width:100%}
-.displayScroller{height:100%;max-height:100%;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-end;touch-action:pan-y;scrollbar-width:none;padding:4px 0}
+.displayScroller{height:100%;max-height:100%;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-end;scrollbar-width:none;padding:4px 0}
 .displayScroller::-webkit-scrollbar{display:none}
 
 .display{width:100%;max-width:100%;text-align:right;font-weight:300;user-select:none}
 .line{display:block;width:100%;max-width:100%;white-space:nowrap;min-height:1.3em;letter-spacing:0.3px;overflow:hidden;word-break:break-all}
 
-.suspicious-num{border:2px solid #ff3b30;border-radius:6px;padding:0 3px;background:rgba(255,59,48,0.2);color:#fff!important;animation:pulseRed 1.5s infinite}
-@keyframes pulseRed{0%{box-shadow:0 0 0 0 rgba(255,59,48,0.7)}70%{box-shadow:0 0 0 6px rgba(255,59,48,0)}100%{box-shadow:0 0 0 0 rgba(255,59,48,0)}}
+.suspicious-num{border:1px solid #ff3b30;border-radius:4px;padding:0 2px;background:rgba(255,59,48,0.2);color:#fff!important}
 
 .char-span{display:inline-block;position:relative}
 .caret{display:inline-block;width:2px;height:.85em;background:#ff7a00;margin:0 1px;vertical-align:-.05em;border-radius:2px;animation:blink 1s step-end infinite}
@@ -74,71 +67,68 @@ body{display:flex;justify-content:center}
 .intermediateBox{width:100%;text-align:right;min-width:0}
 .intermediateResult{font-size:clamp(16px,4.5vw,24px);color:#f5f5f7;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:24px}
 
-.addPositionBtn{width:100%;background:#34c759;color:#fff;border:0;border-radius:14px;padding:10px;font-size:14px;font-weight:bold;margin-bottom:6px;touch-action:none;cursor:pointer}
+.addPositionBtn{width:100%;background:#34c759;color:#fff;border:0;border-radius:14px;padding:10px;font-size:14px;font-weight:bold;margin-bottom:6px;cursor:pointer}
 
 .keys{width:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:6px;height:min(42dvh,360px);min-height:230px;flex:none}
-button.key{border:0;min-width:0;min-height:0;border-radius:16px;background:#242426;color:#f4f4f4;font-size:clamp(16px,5vw,24px);box-shadow:inset 0 1px rgba(255,255,255,.025),0 2px 3px rgba(0,0,0,.5);touch-action:none;cursor:pointer;transition:transform .05s,filter .05s,background .2s,color .2s}
+button.key{border:0;min-width:0;min-height:0;border-radius:16px;background:#242426;color:#f4f4f4;font-size:clamp(16px,5vw,24px);box-shadow:inset 0 1px rgba(255,255,255,.025),0 2px 3px rgba(0,0,0,.5);cursor:pointer}
 button.key:active{transform:scale(.95);filter:brightness(1.3)}
 .key.orange{color:#ff7a00}
-.key.equals{background:#ff7a00;color:#fff;box-shadow:0 3px 8px rgba(255,122,0,.18)}
-.key.danger{background:#ff3b30!important;color:#fff!important;font-size:clamp(11px,3.2vw,14px)!important;font-weight:bold}
+.key.equals{background:#ff7a00;color:#fff}
+.key.danger{background:#ff3b30!important;color:#fff!important;font-size:13px!important;font-weight:bold}
 
-/* Модалки */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:20;padding:18px 16px}
 .modal.show{display:flex;flex-direction:column}
 .modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .modalTitle{font-size:18px;font-weight:bold}
 .modalActions{display:flex;gap:6px}
-.smallBtn{border:0;border-radius:10px;background:#242426;color:#fff;padding:8px 10px;font-size:12px;touch-action:none;cursor:pointer}
+.smallBtn{border:0;border-radius:10px;background:#242426;color:#fff;padding:8px 10px;font-size:12px;cursor:pointer}
 .historyList{overflow:auto;flex:1}
 .historyItem{padding:10px 2px;border-bottom:1px solid #1c1c1e;text-align:right}
 .historyExpr{font-size:15px;color:#ddd;word-break:break-all}
 .historyMeta{font-size:11px;color:#777;margin-top:2px}
 .empty{text-align:center;color:#666;margin-top:30px;font-size:14px;line-height:1.5}
 
-/* Вкладка звітів */
+/* Чистий та строгий звіт */
 .reportWrap{flex:1;overflow-y:auto;padding-right:2px}
-.reportGroup{background:#1c1c1e;border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid #2c2c2e}
-.reportGroupTitle{font-size:16px;font-weight:bold;color:#ff7a00;margin-bottom:8px;border-bottom:1px solid #3a3a3c;padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
-.supplierBlock{background:#262628;border-radius:10px;padding:8px 10px;margin-bottom:8px}
-.supplierTitle{font-size:14px;font-weight:bold;color:#34c759;margin-bottom:4px}
-.supplierSubtotal{font-size:12px;color:#aaa;font-weight:600;margin-top:4px;border-top:1px dashed #3a3a3c;padding-top:4px}
-.reportItem{margin-bottom:4px;font-size:13px;line-height:1.4;display:flex;justify-content:space-between;align-items:center}
-.authorTag{font-size:10px;color:#0a84ff;background:#102840;padding:2px 6px;border-radius:4px;margin-left:6px;white-space:nowrap}
-.dirTotal{font-size:13px;font-weight:bold;color:#ff9f0a;margin-top:8px;padding-top:6px;border-top:1px solid #3a3a3c;text-align:right}
+.reportGroup{background:#1c1c1e;border-radius:12px;padding:10px 12px;margin-bottom:10px;border:1px solid #2c2c2e}
+.reportGroupTitle{font-size:15px;font-weight:bold;color:#ff7a00;margin-bottom:6px;border-bottom:1px solid #2c2c2e;padding-bottom:4px}
+.supplierBlock{margin-bottom:6px}
+.supplierTitle{font-size:13px;font-weight:bold;color:#34c759;margin-top:4px}
+.reportItem{font-size:13px;line-height:1.4;display:flex;justify-content:space-between;align-items:center;padding-left:8px;color:#ddd}
+.authorTag{font-size:10px;color:#8e8e93;margin-left:6px}
+.dirTotal{font-size:12px;font-weight:bold;color:#ff9f0a;margin-top:6px;padding-top:4px;border-top:1px dashed #3a3a3c;text-align:right}
 
-.grandTotalCard{background:#2c1400;border:1px solid #ff7a00;border-radius:14px;padding:12px;margin-top:14px;margin-bottom:10px}
-.grandTotalTitle{font-size:14px;font-weight:bold;color:#ff7a00;margin-bottom:6px}
-.grandTotalRow{font-size:13px;color:#fff;line-height:1.5}
+.grandTotalCard{background:#1c1c1e;border:1px solid #ff7a00;border-radius:12px;padding:10px 12px;margin-top:8px;margin-bottom:10px}
+.grandTotalTitle{font-size:13px;font-weight:bold;color:#ff7a00;margin-bottom:4px}
+.grandTotalRow{font-size:13px;color:#fff;font-weight:600}
 
-.reportActions{display:flex;gap:8px;margin-top:8px}
-.actionBtn{flex:1;border:0;border-radius:10px;padding:10px;font-size:13px;font-weight:600;touch-action:none;cursor:pointer}
+.reportActions{display:flex;gap:8px;margin-top:6px}
+.actionBtn{flex:1;border:0;border-radius:10px;padding:10px;font-size:13px;font-weight:600;cursor:pointer}
 .actionBtn.copy{background:#0a84ff;color:#fff}
 .actionBtn.clear{background:#ff3b30;color:#fff}
 </style>
 </head>
 <body>
 <div class="app">
-  <div class="syncStatus online" id="syncStatus">🟢 Онлайн-синхронізація активна</div>
+  <div class="syncStatus online" id="syncStatus">Синхронізація активна</div>
 
   <div class="tabs">
-    <button class="tabBtn active" id="tabCalc">🧮 Калькулятор</button>
-    <button class="tabBtn" id="tabReport">📋 Напрями & Звіт (<span id="repCount">0</span>)</button>
+    <button class="tabBtn active" id="tabCalc">Калькулятор</button>
+    <button class="tabBtn" id="tabReport">Звіт (<span id="repCount">0</span>)</button>
   </div>
 
-  <!-- Вкладка 1: Калькулятор -->
   <div class="view active" id="viewCalc">
     <div class="sessionCard">
       <div class="formRow">
-        <input type="text" id="inputRoomCode" class="formInput syncCode" placeholder="Код сесії (напр: 2809)" value="2809">
+        <input type="text" id="inputRoomCode" class="formInput syncCode" placeholder="Код сесії" value="01">
         <input type="text" id="inputWorkerName" class="formInput" placeholder="Моє ім'я" value="Антон">
       </div>
       <div class="formRow">
         <input type="text" id="inputDirection" class="formInput" placeholder="Місто / Напрямок" value="Харків">
-        <input type="text" id="inputSupplier" class="formInput" placeholder="Постачальник">
+        <input type="text" id="inputSupplier" class="formInput" placeholder="Постачальник" value="Деняк">
       </div>
       <div class="formRow">
-        <input type="text" id="inputTmc" class="formInput" placeholder="Код ТМЦ / Назва тканини">
+        <input type="text" id="inputTmc" class="formInput" placeholder="Код ТМЦ / Назва тканини" value="480315 тринитка аіша">
       </div>
     </div>
 
@@ -151,9 +141,9 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
         <button class="historyBtn" id="btnHistory">История</button>
         <div class="suspiciousBox" id="suspiciousBox">
           <div class="suspiciousTitle">⚠️ 3+ знаків після коми:</div>
-          <div class="suspiciousValue" id="suspiciousValue">23,52396</div>
+          <div class="suspiciousValue" id="suspiciousValue">0</div>
           <div class="suspiciousBtns">
-            <button class="suspBtn confirm" id="btnConfirmSusp">Так, вірно</button>
+            <button class="suspBtn confirm" id="btnConfirmSusp">Вірно</button>
             <button class="suspBtn fix" id="btnFixSusp">Виправити</button>
           </div>
         </div>
@@ -175,39 +165,38 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
     <button class="addPositionBtn" id="btnAddPosition">➕ Додати в спільний звіт</button>
 
     <div class="keys">
-      <button class="key" id="acBtn" data-act="AC">C</button>
-      <button class="key" data-act="back">⌫</button>
-      <button class="key orange" data-act="%">%</button>
-      <button class="key orange" data-act="/">÷</button>
+      <button class="key" id="acBtn" onclick="press('AC')">C</button>
+      <button class="key" onclick="press('back')">⌫</button>
+      <button class="key orange" onclick="press('%')">%</button>
+      <button class="key orange" onclick="press('/')">÷</button>
 
-      <button class="key" data-act="7">7</button>
-      <button class="key" data-act="8">8</button>
-      <button class="key" data-act="9">9</button>
-      <button class="key orange" data-act="*">×</button>
+      <button class="key" onclick="press('7')">7</button>
+      <button class="key" onclick="press('8')">8</button>
+      <button class="key" onclick="press('9')">9</button>
+      <button class="key orange" onclick="press('*')">×</button>
 
-      <button class="key" data-act="4">4</button>
-      <button class="key" data-act="5">5</button>
-      <button class="key" data-act="6">6</button>
-      <button class="key orange" data-act="-">−</button>
+      <button class="key" onclick="press('4')">4</button>
+      <button class="key" onclick="press('5')">5</button>
+      <button class="key" onclick="press('6')">6</button>
+      <button class="key orange" onclick="press('-')">−</button>
 
-      <button class="key" data-act="1">1</button>
-      <button class="key" data-act="2">2</button>
-      <button class="key" data-act="3">3</button>
-      <button class="key orange" data-act="+">+</button>
+      <button class="key" onclick="press('1')">1</button>
+      <button class="key" onclick="press('2')">2</button>
+      <button class="key" onclick="press('3')">3</button>
+      <button class="key orange" onclick="press('+')">+</button>
 
-      <button class="key orange" data-act="sign">±</button>
-      <button class="key" data-act="0">0</button>
-      <button class="key" data-act=".">,</button>
-      <button class="key equals" data-act="=">=</button>
+      <button class="key orange" onclick="press('sign')">±</button>
+      <button class="key" onclick="press('0')">0</button>
+      <button class="key" onclick="press('.')">,</button>
+      <button class="key equals" onclick="press('=')">=</button>
     </div>
   </div>
 
-  <!-- Вкладка 2: Звіти -->
   <div class="view" id="viewReport">
     <div class="reportWrap" id="reportContent"></div>
     <div class="reportActions">
-      <button class="actionBtn copy" id="btnCopyReport">📋 Скопіювати звіт</button>
-      <button class="actionBtn clear" id="btnClearReport">🗑 Очистити спільну сесію</button>
+      <button class="actionBtn copy" id="btnCopyReport"> Скопіювати звіт</button>
+      <button class="actionBtn clear" id="btnClearReport"> Очистити сесію</button>
     </div>
   </div>
 </div>
@@ -224,7 +213,6 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 </div>
 
 <script>
-// 🌐 Готова хмарна конфігурація для миттєвої онлайн-синхронізації
 const firebaseConfig = {
   databaseURL: "https://fabric-warehouse-default-rtdb.europe-west1.firebasedatabase.app"
 };
@@ -235,9 +223,7 @@ let currentRoomRef = null;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
-} catch(e){
-  console.log("Помилка підключення до онлайн бази");
-}
+} catch(e){}
 
 let input="";
 let cursorPos=0;
@@ -251,15 +237,13 @@ let currentSuspiciousToken = null;
 
 const $=id=>document.getElementById(id);
 
-function vibrate(ms=12){
-  if(navigator.vibrate){
-    try{navigator.vibrate(ms);}catch(e){}
-  }
+function vibrate(ms=10){
+  if(navigator.vibrate){ try{navigator.vibrate(ms);}catch(e){} }
 }
 
 function saveLocalState(){
   try{
-    localStorage.setItem("fabric_sync_state_v2",JSON.stringify({
+    localStorage.setItem("fabric_sync_state_v3",JSON.stringify({
       input,resultShown,cursorPos,
       room:$("inputRoomCode").value,
       worker:$("inputWorkerName").value,
@@ -272,7 +256,7 @@ function saveLocalState(){
 
 function loadLocalState(){
   try{
-    const s=JSON.parse(localStorage.getItem("fabric_sync_state_v2")||"null");
+    const s=JSON.parse(localStorage.getItem("fabric_sync_state_v3")||"null");
     if(s){
       input=typeof s.input==="string"?s.input:"";
       resultShown=!!s.resultShown;
@@ -286,49 +270,24 @@ function loadLocalState(){
   }catch(e){}
 }
 
-// 🔄 Синхронізація сесії з онлайн базою
 function connectToRoom(){
   const roomCode = ($("inputRoomCode").value.trim() || "default").toLowerCase();
-  
-  if(currentRoomRef) {
-    currentRoomRef.off();
-  }
+  if(currentRoomRef) currentRoomRef.off();
 
   if(db) {
     currentRoomRef = db.ref("warehouse_sessions/" + roomCode);
-    
-    $("syncStatus").textContent = `🟢 Онлайн сесія: "${roomCode.toUpperCase()}"`;
+    $("syncStatus").textContent = `Сесія: "${roomCode.toUpperCase()}" (онлайн)`;
     $("syncStatus").className = "syncStatus online";
 
     currentRoomRef.on("value", (snapshot) => {
       const data = snapshot.val();
-      if(data && data.items){
-        sessionReport = Object.values(data.items);
-      } else {
-        sessionReport = [];
-      }
+      sessionReport = (data && data.items) ? Object.values(data.items) : [];
       renderReport();
     });
   } else {
-    $("syncStatus").textContent = "⚠️ Локальний режим (без інтернету)";
+    $("syncStatus").textContent = "Локальний режим";
     $("syncStatus").className = "syncStatus offline";
   }
-}
-
-function bindFastClick(elem, callback){
-  let handled = false;
-  const handler = (e) => {
-    if(e.type === 'pointerdown' || e.type === 'touchstart'){
-      handled = true;
-      e.preventDefault();
-      callback(e);
-    } else if(e.type === 'click'){
-      if(handled){ handled = false; return; }
-      callback(e);
-    }
-  };
-  elem.addEventListener('pointerdown', handler, {passive: false});
-  elem.addEventListener('click', handler);
 }
 
 function resetAcButton(){
@@ -348,8 +307,7 @@ function numbers(s){return s.match(/\d+(?:\.\d*)?/g)||[]}
 
 function isSuspicious(numStr){
   const parts = numStr.split('.');
-  if(parts.length > 1 && parts[1].length >= 3) return true;
-  return false;
+  return parts.length > 1 && parts[1].length >= 3;
 }
 
 function buildLines(s){
@@ -357,9 +315,7 @@ function buildLines(s){
   while((m=re.exec(s))) {
     const isNum = /^\d/.test(m[0]);
     const susp = isNum && isSuspicious(m[0]) && !confirmedSuspicious.has(m.index + "_" + m[0]);
-    tokens.push({
-      text:m[0], start:m.index, end:m.index+m[0].length, isNum:isNum, isSuspicious: susp
-    });
+    tokens.push({ text:m[0], start:m.index, end:m.index+m[0].length, isNum, isSuspicious: susp });
   }
   
   const lines=[]; let line=[], count=0, start=0;
@@ -408,9 +364,7 @@ function render(){
         tokenContainer.appendChild(caret);
       }
 
-      if(t.isSuspicious){
-        div.appendChild(tokenContainer);
-      }
+      if(t.isSuspicious) div.appendChild(tokenContainer);
     });
 
     d.appendChild(div);
@@ -443,7 +397,7 @@ function render(){
 }
 
 function confirmSuspicious(){
-  vibrate([15, 30, 15]);
+  vibrate(10);
   if(currentSuspiciousToken){
     confirmedSuspicious.add(currentSuspiciousToken.start + "_" + currentSuspiciousToken.text);
     render();
@@ -451,7 +405,7 @@ function confirmSuspicious(){
 }
 
 function fixSuspicious(){
-  vibrate(30);
+  vibrate(10);
   if(currentSuspiciousToken){
     const {start, end} = currentSuspiciousToken;
     input = input.slice(0, start) + input.slice(end);
@@ -506,7 +460,7 @@ function insert(v){
 }
 
 function press(v){
-  vibrate(12);
+  vibrate(10);
   if(v!=="AC" && clearConfirmState) resetAcButton();
 
   if(v==="AC"){
@@ -514,7 +468,6 @@ function press(v){
     if(!clearConfirmState){
       clearConfirmState=true;
       const btn=$("acBtn"); btn.textContent="ТОЧНО?"; btn.classList.add("danger");
-      vibrate([20, 40, 20]);
       clearTimer=setTimeout(()=>resetAcButton(),3000);
       return;
     } else {
@@ -570,7 +523,6 @@ function calculate(){
   }catch{$("intermediateResult").textContent="Помилка"}
 }
 
-// ➕ Збереження в спільну хмару
 function addPositionToReport(){
   if(!input) return;
   try{
@@ -587,8 +539,7 @@ function addPositionToReport(){
       id: Date.now() + "_" + Math.random().toString(36).substr(2, 4),
       dir, sup, tmc, worker,
       rollsCount: rolls.length,
-      totalWeight: totalVal,
-      details: expr
+      totalWeight: totalVal
     };
 
     if(currentRoomRef){
@@ -598,13 +549,13 @@ function addPositionToReport(){
       renderReport();
     }
 
-    vibrate([20, 50, 20]);
+    vibrate(15);
     input = "";
     cursorPos = 0;
     render();
-    alert(`Збережено від (${worker}):\n📍 ${dir} -> ${sup}\n• ${tmc}: ${rolls.length} рул. = ${pretty(totalVal)} кг`);
+    alert(`Збережено:\n${dir} -> ${sup}\n${tmc}: ${rolls.length} рул. = ${pretty(totalVal)} кг`);
   }catch(e){
-    alert("Помилка додавання позиції");
+    alert("Помилка додавання");
   }
 }
 
@@ -626,7 +577,7 @@ function renderReport(){
   if(!wrap) return;
 
   if(!sessionReport.length){
-    wrap.innerHTML = '<div class="empty">Звіт порожній.<br>Усі додані позиції з усіх телефонів з однаковим кодом сесії будуть з'являтися тут!</div>';
+    wrap.innerHTML = '<div class="empty">Звіт порожній</div>';
     return;
   }
 
@@ -639,7 +590,6 @@ function renderReport(){
     let dirRolls = 0;
     let dirWeight = 0;
     const isPickup = dir.toLowerCase().includes("самовив") || dir.toLowerCase().includes("самовыв");
-
     let suppliersHtml = "";
 
     for(const sup in grouped[dir]){
@@ -650,8 +600,8 @@ function renderReport(){
         supRolls += item.rollsCount;
         supWeight += item.totalWeight;
         return `<div class="reportItem">
-          <span>• <b>${item.tmc}</b>: ${item.rollsCount} рул. = <b>${pretty(item.totalWeight)} кг</b></span>
-          <span class="authorTag">👤 ${item.worker}</span>
+          <span>• ${item.tmc} — ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг</span>
+          <span class="authorTag">(${item.worker})</span>
         </div>`;
       }).join("");
 
@@ -659,9 +609,8 @@ function renderReport(){
       dirWeight += supWeight;
 
       suppliersHtml += `<div class="supplierBlock">
-        <div class="supplierTitle">🏢 ${sup}</div>
+        <div class="supplierTitle">▪️ ${sup}</div>
         ${itemsHtml}
-        <div class="supplierSubtotal">👉 Всього по "${sup}": <b>${supRolls} рул.</b> | <b>${pretty(Number(supWeight.toFixed(2)))} кг</b></div>
       </div>`;
     }
 
@@ -671,52 +620,47 @@ function renderReport(){
     }
 
     html += `<div class="reportGroup">
-      <div class="reportGroupTitle">
-        <span>📍 НАПРЯМ: ${dir}</span>
-      </div>
+      <div class="reportGroupTitle">${dir}</div>
       ${suppliersHtml}
-      <div class="dirTotal">📊 Разом по "${dir}": <b>${dirRolls} рул.</b> | <b>${pretty(Number(dirWeight.toFixed(2)))} кг</b></div>
+      <div class="dirTotal">Разом ${dir}: ${dirRolls} рул. | ${pretty(Number(dirWeight.toFixed(2)))} кг</div>
     </div>`;
   }
 
   html += `<div class="grandTotalCard">
-    <div class="grandTotalTitle">🚚 ЗАГАЛОМ ПО ВІДВАНТАЖЕННЯХ (без Самовивозу):</div>
-    <div class="grandTotalRow">• Всього рулонів: <b>${grandRollsExcludingPickup} рул.</b></div>
-    <div class="grandTotalRow">• Загальна вага: <b>${pretty(Number(grandWeightExcludingPickup.toFixed(2)))} кг</b></div>
+    <div class="grandTotalTitle">ЗАГАЛОМ (без Самовивозу):</div>
+    <div class="grandTotalRow">${grandRollsExcludingPickup} рул. | ${pretty(Number(grandWeightExcludingPickup.toFixed(2)))} кг</div>
   </div>`;
 
   wrap.innerHTML = html;
 }
 
 function copyReportToClipboard(){
-  if(!sessionReport.length){ alert("Немає даних для копіювання"); return; }
+  if(!sessionReport.length){ alert("Звіт порожній"); return; }
   const grouped = getGroupedData();
-  const roomCode = ($("inputRoomCode").value.trim() || "default").toUpperCase();
-  let text = `📦 ЗВІТ ВІДБОРУ ТКАНИН (Сесія: ${roomCode})\n\n`;
+  let text = `ЗВІТ ВІДБОРУ ТКАНИН\n\n`;
 
   let grandRollsExcludingPickup = 0;
   let grandWeightExcludingPickup = 0;
 
   for(const dir in grouped){
-    text += `📍 НАПРЯМ: ${dir}\n------------------------------\n`;
+    text += `${dir}\n`;
     let dirRolls = 0;
     let dirWeight = 0;
     const isPickup = dir.toLowerCase().includes("самовив") || dir.toLowerCase().includes("самовыв");
 
     for(const sup in grouped[dir]){
-      text += `🏢 Постачальник: ${sup}\n`;
+      text += `▪️ ${sup}\n`;
       let supRolls = 0;
       let supWeight = 0;
 
       grouped[dir][sup].forEach(item => {
         supRolls += item.rollsCount;
         supWeight += item.totalWeight;
-        text += `  • ${item.tmc} — ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг (👤 ${item.worker})\n`;
+        text += `  • ${item.tmc} — ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг\n`;
       });
 
       dirRolls += supRolls;
       dirWeight += supWeight;
-      text += `  👉 Всього по "${sup}": ${supRolls} рул. | ${pretty(Number(supWeight.toFixed(2)))} кг\n\n`;
     }
 
     if(!isPickup){
@@ -724,85 +668,70 @@ function copyReportToClipboard(){
       grandWeightExcludingPickup += dirWeight;
     }
 
-    text += `📊 Разом по "${dir}": ${dirRolls} рул. | ${pretty(Number(dirWeight.toFixed(2)))} кг\n\n\n`;
+    text += `Разом ${dir}: ${dirRolls} рул. | ${pretty(Number(dirWeight.toFixed(2)))} кг\n\n`;
   }
 
-  text += `==============================\n`;
-  text += `🚚 ЗАГАЛОМ ПО ВІДВАНТАЖЕННЯХ (без Самовивозу):\n`;
-  text += `• Всього рулонів: ${grandRollsExcludingPickup} рул.\n`;
-  text += `• Загальна вага: ${pretty(Number(grandWeightExcludingPickup.toFixed(2)))} кг\n`;
+  text += `________________________________\n`;
+  text += `ЗАГАЛОМ (без Самовивозу): ${grandRollsExcludingPickup} рул. | ${pretty(Number(grandWeightExcludingPickup.toFixed(2)))} кг\n`;
 
   navigator.clipboard.writeText(text).then(() => {
-    vibrate(20);
-    alert("Спільний звіт скопійовано в буфер обміну!");
+    vibrate(15);
+    alert("Звіт скопійовано!");
   });
 }
 
 function clearReport(){
-  if(confirm("Очистити СПІЛЬНУ сесію для ВСІХ комірників?")){
-    if(currentRoomRef){
-      currentRoomRef.remove();
-    } else {
-      sessionReport = [];
-      renderReport();
-    }
+  if(confirm("Очистити спільний звіт для всіх?")){
+    if(currentRoomRef) currentRoomRef.remove();
+    else { sessionReport = []; renderReport(); }
   }
 }
 
-function openHistory(){vibrate(15);$("historyModal").classList.add("show");renderHistory()}
-function closeHistory(){vibrate(15);$("historyModal").classList.remove("show")}
+function openHistory(){vibrate(10);$("historyModal").classList.add("show");renderHistory()}
+function closeHistory(){vibrate(10);$("historyModal").classList.remove("show")}
 function clearHistory(){
-  vibrate(20);
-  if(confirm("Очистить историю калькулятора?")){
-    history=[];renderHistory();
-  }
+  vibrate(10);
+  if(confirm("Очистити історію?")){ history=[];renderHistory(); }
 }
 
 function renderHistory(){
   const list=$("historyList");
-  if(!history.length){list.innerHTML='<div class="empty">История пуста</div>';return}
-  list.innerHTML=history.map((x,i)=>`<div class="historyItem"><div class="historyExpr">${i+1}. ${x.expression} = ${x.result}</div><div class="historyMeta">Чисел: ${x.count} · ${x.time}</div></div>`).join("");
+  if(!history.length){list.innerHTML='<div class="empty">Історія порожня</div>';return}
+  list.innerHTML=history.map((x,i)=>`<div class="historyItem"><div class="historyExpr">${i+1}. ${x.expression} = ${x.result}</div><div class="historyMeta">Рулонів: ${x.count} · ${x.time}</div></div>`).join("");
 }
 
-/* Таби */
-bindFastClick($("tabCalc"), () => {
+/* Перемикачі вкладок */
+$("tabCalc").onclick = () => {
   $("tabCalc").classList.add("active");
   $("tabReport").classList.remove("active");
   $("viewCalc").classList.add("active");
   $("viewReport").classList.remove("active");
-});
+};
 
-bindFastClick($("tabReport"), () => {
+$("tabReport").onclick = () => {
   $("tabReport").classList.add("active");
   $("tabCalc").classList.remove("active");
   $("viewReport").classList.add("active");
   $("viewCalc").classList.remove("active");
   renderReport();
-});
+};
 
-document.querySelectorAll('.keys button.key').forEach(btn => {
-  bindFastClick(btn, () => {
-    const act = btn.getAttribute('data-act');
-    if(act) press(act);
-  });
-});
+$("btnAddPosition").onclick = addPositionToReport;
+$("btnCopyReport").onclick = copyReportToClipboard;
+$("btnClearReport").onclick = clearReport;
+$("btnHistory").onclick = openHistory;
+$("btnConfirmSusp").onclick = confirmSuspicious;
+$("btnFixSusp").onclick = fixSuspicious;
+$("btnClearHistory").onclick = clearHistory;
+$("btnCloseHistory").onclick = closeHistory;
 
-bindFastClick($("btnAddPosition"), addPositionToReport);
-bindFastClick($("btnCopyReport"), copyReportToClipboard);
-bindFastClick($("btnClearReport"), clearReport);
-bindFastClick($("btnHistory"), openHistory);
-bindFastClick($("btnConfirmSusp"), confirmSuspicious);
-bindFastClick($("btnFixSusp"), fixSuspicious);
-bindFastClick($("btnClearHistory"), clearHistory);
-bindFastClick($("btnCloseHistory"), closeHistory);
-
-$("displayScroller").addEventListener("click",e=>{
+$("displayScroller").onclick = e => {
   const sp=e.target.closest("[data-pos]");
   if(!sp) return;
   const r=sp.getBoundingClientRect();
   cursorPos=Number(sp.dataset.pos)+(e.clientX-r.left>r.width/2?1:0);
   resultShown=false;render();
-});
+};
 
 ["inputDirection", "inputSupplier", "inputTmc", "inputWorkerName"].forEach(id => {
   $(id).addEventListener("input", saveLocalState);
