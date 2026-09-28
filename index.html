@@ -9,9 +9,10 @@
 <meta name="theme-color" content="#000000">
 <title>Складський Відбір</title>
 
-<!-- Firebase Realtime Database SDK -->
+<!-- Firebase SDK (App, Database, Auth) -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -88,7 +89,6 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 .historyMeta{font-size:11px;color:#777;margin-top:2px}
 .empty{text-align:center;color:#666;margin-top:30px;font-size:14px;line-height:1.5}
 
-/* Чистий та строгий звіт */
 .reportWrap{flex:1;overflow-y:auto;padding-right:2px}
 .reportGroup{background:#1c1c1e;border-radius:12px;padding:10px 12px;margin-bottom:10px;border:1px solid #2c2c2e}
 .reportGroupTitle{font-size:15px;font-weight:bold;color:#ff7a00;margin-bottom:6px;border-bottom:1px solid #2c2c2e;padding-bottom:4px}
@@ -110,7 +110,7 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 </head>
 <body>
 <div class="app">
-  <div class="syncStatus online" id="syncStatus">Синхронізація активна</div>
+  <div class="syncStatus online" id="syncStatus">Підключення...</div>
 
   <div class="tabs">
     <button class="tabBtn active" id="tabCalc">Калькулятор</button>
@@ -195,8 +195,8 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
   <div class="view" id="viewReport">
     <div class="reportWrap" id="reportContent"></div>
     <div class="reportActions">
-      <button class="actionBtn copy" id="btnCopyReport"> Скопіювати звіт</button>
-      <button class="actionBtn clear" id="btnClearReport"> Очистити сесію</button>
+      <button class="actionBtn copy" id="btnCopyReport">Скопіювати звіт</button>
+      <button class="actionBtn clear" id="btnClearReport">Очистити сесію</button>
     </div>
   </div>
 </div>
@@ -223,7 +223,11 @@ let currentRoomRef = null;
 try {
   firebase.initializeApp(firebaseConfig);
   db = firebase.database();
-} catch(e){}
+  // Автоматична анонімна авторизація в хмарі
+  firebase.auth().signInAnonymously().catch(e => console.error("Auth error:", e));
+} catch(e){
+  console.error(e);
+}
 
 let input="";
 let cursorPos=0;
@@ -243,7 +247,7 @@ function vibrate(ms=10){
 
 function saveLocalState(){
   try{
-    localStorage.setItem("fabric_sync_state_v3",JSON.stringify({
+    localStorage.setItem("fabric_sync_state_v4",JSON.stringify({
       input,resultShown,cursorPos,
       room:$("inputRoomCode").value,
       worker:$("inputWorkerName").value,
@@ -256,7 +260,7 @@ function saveLocalState(){
 
 function loadLocalState(){
   try{
-    const s=JSON.parse(localStorage.getItem("fabric_sync_state_v3")||"null");
+    const s=JSON.parse(localStorage.getItem("fabric_sync_state_v4")||"null");
     if(s){
       input=typeof s.input==="string"?s.input:"";
       resultShown=!!s.resultShown;
@@ -271,7 +275,7 @@ function loadLocalState(){
 }
 
 function connectToRoom(){
-  const roomCode = ($("inputRoomCode").value.trim() || "default").toLowerCase();
+  const roomCode = ($("inputRoomCode").value.trim() || "01").toLowerCase();
   if(currentRoomRef) currentRoomRef.off();
 
   if(db) {
@@ -283,6 +287,10 @@ function connectToRoom(){
       const data = snapshot.val();
       sessionReport = (data && data.items) ? Object.values(data.items) : [];
       renderReport();
+    }, (error) => {
+      console.error(error);
+      $("syncStatus").textContent = "Помилка підключення";
+      $("syncStatus").className = "syncStatus offline";
     });
   } else {
     $("syncStatus").textContent = "Локальний режим";
@@ -700,7 +708,6 @@ function renderHistory(){
   list.innerHTML=history.map((x,i)=>`<div class="historyItem"><div class="historyExpr">${i+1}. ${x.expression} = ${x.result}</div><div class="historyMeta">Рулонів: ${x.count} · ${x.time}</div></div>`).join("");
 }
 
-/* Перемикачі вкладок */
 $("tabCalc").onclick = () => {
   $("tabCalc").classList.add("active");
   $("tabReport").classList.remove("active");
