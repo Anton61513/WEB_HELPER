@@ -8,12 +8,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Складська Система Відбору & Калькулятор</title>
+<title>Складська Система Відбору & Синхронізація</title>
+
+<!-- Firebase Realtime Database SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <style>
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;width:100%;height:100%;background:#000;color:#f5f5f7;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;overflow:hidden}
 body{display:flex;justify-content:center}
-.app{width:100%;max-width:500px;height:100dvh;padding:10px 12px max(8px,env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden;position:relative}
+.app{width:100%;max-width:500px;height:100dvh;padding:8px 12px max(8px,env(safe-area-inset-bottom));display:flex;flex-direction:column;overflow:hidden;position:relative}
+
+/* Статус онлайн-синхронізації */
+.syncStatus{font-size:11px;padding:5px 8px;border-radius:8px;text-align:center;margin-bottom:6px;font-weight:600;display:flex;align-items:center;justify-content:center;gap:6px}
+.syncStatus.online{background:#122a1b;color:#34c759;border:1px solid #1e522d}
+.syncStatus.offline{background:#2a1212;color:#ff3b30;border:1px solid #521e1e}
 
 /* Перемикач вкладок */
 .tabs{display:flex;gap:6px;margin-bottom:8px;flex:none}
@@ -23,13 +33,14 @@ body{display:flex;justify-content:center}
 .view{display:none;flex-direction:column;flex:1;overflow:hidden}
 .view.active{display:flex}
 
-/* Панель напрямку / ТМЦ */
+/* Панель налаштувань сесії та напрямку */
 .sessionCard{background:#1c1c1e;border-radius:14px;padding:10px;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;flex:none}
 .formRow{display:flex;gap:8px;align-items:center}
 .formInput{flex:1;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;padding:8px 10px;color:#fff;font-size:13px;outline:none}
 .formInput::placeholder{color:#7c7c80}
+.formInput.syncCode{border-color:#ff7a00;color:#ff7a00;font-weight:bold}
 
-.top{height:40px;display:flex;justify-content:space-between;align-items:flex-start;flex:none}
+.top{height:36px;display:flex;justify-content:space-between;align-items:flex-start;flex:none}
 .info{font-size:13px;line-height:1.3;color:#9a9a9f}
 .historyBtn{border:0;border-radius:14px;background:#242426;color:#eee;padding:6px 12px;font-size:12px;touch-action:none;cursor:pointer}
 
@@ -45,7 +56,7 @@ body{display:flex;justify-content:center}
 
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 
-.displayWrap{flex:1;min-height:60px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;width:100%}
+.displayWrap{flex:1;min-height:50px;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;width:100%}
 .displayScroller{height:100%;max-height:100%;overflow-y:auto;overflow-x:hidden;display:flex;align-items:flex-end;touch-action:pan-y;scrollbar-width:none;padding:4px 0}
 .displayScroller::-webkit-scrollbar{display:none}
 
@@ -59,13 +70,13 @@ body{display:flex;justify-content:center}
 .caret{display:inline-block;width:2px;height:.85em;background:#ff7a00;margin:0 1px;vertical-align:-.05em;border-radius:2px;animation:blink 1s step-end infinite}
 @keyframes blink{50%{opacity:0}}
 
-.intermediate{height:32px;flex:none;display:flex;justify-content:flex-end;align-items:center;padding:0 2px;overflow:hidden;width:100%}
+.intermediate{height:28px;flex:none;display:flex;justify-content:flex-end;align-items:center;padding:0 2px;overflow:hidden;width:100%}
 .intermediateBox{width:100%;text-align:right;min-width:0}
-.intermediateResult{font-size:clamp(18px,5vw,26px);color:#f5f5f7;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:26px}
+.intermediateResult{font-size:clamp(16px,4.5vw,24px);color:#f5f5f7;font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:24px}
 
 .addPositionBtn{width:100%;background:#34c759;color:#fff;border:0;border-radius:14px;padding:10px;font-size:14px;font-weight:bold;margin-bottom:6px;touch-action:none;cursor:pointer}
 
-.keys{width:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:6px;height:min(44dvh,380px);min-height:240px;flex:none}
+.keys{width:100%;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(5,1fr);gap:6px;height:min(42dvh,360px);min-height:230px;flex:none}
 button.key{border:0;min-width:0;min-height:0;border-radius:16px;background:#242426;color:#f4f4f4;font-size:clamp(16px,5vw,24px);box-shadow:inset 0 1px rgba(255,255,255,.025),0 2px 3px rgba(0,0,0,.5);touch-action:none;cursor:pointer;transition:transform .05s,filter .05s,background .2s,color .2s}
 button.key:active{transform:scale(.95);filter:brightness(1.3)}
 .key.orange{color:#ff7a00}
@@ -83,7 +94,7 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 .historyItem{padding:10px 2px;border-bottom:1px solid #1c1c1e;text-align:right}
 .historyExpr{font-size:15px;color:#ddd;word-break:break-all}
 .historyMeta{font-size:11px;color:#777;margin-top:2px}
-.empty{text-align:center;color:#555;margin-top:30px}
+.empty{text-align:center;color:#666;margin-top:30px;font-size:14px;line-height:1.5}
 
 /* Вкладка звітів */
 .reportWrap{flex:1;overflow-y:auto;padding-right:2px}
@@ -92,7 +103,8 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 .supplierBlock{background:#262628;border-radius:10px;padding:8px 10px;margin-bottom:8px}
 .supplierTitle{font-size:14px;font-weight:bold;color:#34c759;margin-bottom:4px}
 .supplierSubtotal{font-size:12px;color:#aaa;font-weight:600;margin-top:4px;border-top:1px dashed #3a3a3c;padding-top:4px}
-.reportItem{margin-bottom:4px;font-size:13px;line-height:1.4}
+.reportItem{margin-bottom:4px;font-size:13px;line-height:1.4;display:flex;justify-content:space-between;align-items:center}
+.authorTag{font-size:10px;color:#0a84ff;background:#102840;padding:2px 6px;border-radius:4px;margin-left:6px;white-space:nowrap}
 .dirTotal{font-size:13px;font-weight:bold;color:#ff9f0a;margin-top:8px;padding-top:6px;border-top:1px solid #3a3a3c;text-align:right}
 
 .grandTotalCard{background:#2c1400;border:1px solid #ff7a00;border-radius:14px;padding:12px;margin-top:14px;margin-bottom:10px}
@@ -107,6 +119,8 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 </head>
 <body>
 <div class="app">
+  <div class="syncStatus online" id="syncStatus">🟢 Онлайн-синхронізація активна</div>
+
   <div class="tabs">
     <button class="tabBtn active" id="tabCalc">🧮 Калькулятор</button>
     <button class="tabBtn" id="tabReport">📋 Напрями & Звіт (<span id="repCount">0</span>)</button>
@@ -116,8 +130,12 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
   <div class="view active" id="viewCalc">
     <div class="sessionCard">
       <div class="formRow">
-        <input type="text" id="inputDirection" class="formInput" placeholder="Місто / Напрямок (Харків...)" value="Харків">
-        <input type="text" id="inputSupplier" class="formInput" placeholder="Постачальник / Клієнт">
+        <input type="text" id="inputRoomCode" class="formInput syncCode" placeholder="Код сесії (напр: 2809)" value="2809">
+        <input type="text" id="inputWorkerName" class="formInput" placeholder="Моє ім'я" value="Антон">
+      </div>
+      <div class="formRow">
+        <input type="text" id="inputDirection" class="formInput" placeholder="Місто / Напрямок" value="Харків">
+        <input type="text" id="inputSupplier" class="formInput" placeholder="Постачальник">
       </div>
       <div class="formRow">
         <input type="text" id="inputTmc" class="formInput" placeholder="Код ТМЦ / Назва тканини">
@@ -154,7 +172,7 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
       </div>
     </div>
 
-    <button class="addPositionBtn" id="btnAddPosition">➕ Додати позицію в Направу</button>
+    <button class="addPositionBtn" id="btnAddPosition">➕ Додати в спільний звіт</button>
 
     <div class="keys">
       <button class="key" id="acBtn" data-act="AC">C</button>
@@ -189,7 +207,7 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
     <div class="reportWrap" id="reportContent"></div>
     <div class="reportActions">
       <button class="actionBtn copy" id="btnCopyReport">📋 Скопіювати звіт</button>
-      <button class="actionBtn clear" id="btnClearReport">🗑 Очистити сесію</button>
+      <button class="actionBtn clear" id="btnClearReport">🗑 Очистити спільну сесію</button>
     </div>
   </div>
 </div>
@@ -206,6 +224,21 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 </div>
 
 <script>
+// 🌐 Готова хмарна конфігурація для миттєвої онлайн-синхронізації
+const firebaseConfig = {
+  databaseURL: "https://fabric-warehouse-default-rtdb.europe-west1.firebasedatabase.app"
+};
+
+let db = null;
+let currentRoomRef = null;
+
+try {
+  firebase.initializeApp(firebaseConfig);
+  db = firebase.database();
+} catch(e){
+  console.log("Помилка підключення до онлайн бази");
+}
+
 let input="";
 let cursorPos=0;
 let resultShown=false;
@@ -224,35 +257,62 @@ function vibrate(ms=12){
   }
 }
 
-function save(){
+function saveLocalState(){
   try{
-    localStorage.setItem("anton29253_state_v10",JSON.stringify({
+    localStorage.setItem("fabric_sync_state_v2",JSON.stringify({
       input,resultShown,cursorPos,
+      room:$("inputRoomCode").value,
+      worker:$("inputWorkerName").value,
       dir:$("inputDirection").value,
       sup:$("inputSupplier").value,
       tmc:$("inputTmc").value
     }));
-    localStorage.setItem("anton29253_history_v10",JSON.stringify(history));
-    localStorage.setItem("anton29253_report_v10",JSON.stringify(sessionReport));
   }catch(e){}
 }
 
-function load(){
+function loadLocalState(){
   try{
-    const s=JSON.parse(localStorage.getItem("anton29253_state_v10")||"null");
-    const h=JSON.parse(localStorage.getItem("anton29253_history_v10")||"[]");
-    const r=JSON.parse(localStorage.getItem("anton29253_report_v10")||"[]");
+    const s=JSON.parse(localStorage.getItem("fabric_sync_state_v2")||"null");
     if(s){
       input=typeof s.input==="string"?s.input:"";
       resultShown=!!s.resultShown;
       cursorPos=Math.max(0,Math.min(input.length,Number(s.cursorPos)||0));
+      if(s.room) $("inputRoomCode").value = s.room;
+      if(s.worker) $("inputWorkerName").value = s.worker;
       if(s.dir) $("inputDirection").value = s.dir;
       if(s.sup) $("inputSupplier").value = s.sup;
       if(s.tmc) $("inputTmc").value = s.tmc;
     }
-    history=Array.isArray(h)?h:[];
-    sessionReport=Array.isArray(r)?r:[];
-  }catch(e){input="";history=[];sessionReport=[];cursorPos=0}
+  }catch(e){}
+}
+
+// 🔄 Синхронізація сесії з онлайн базою
+function connectToRoom(){
+  const roomCode = ($("inputRoomCode").value.trim() || "default").toLowerCase();
+  
+  if(currentRoomRef) {
+    currentRoomRef.off();
+  }
+
+  if(db) {
+    currentRoomRef = db.ref("warehouse_sessions/" + roomCode);
+    
+    $("syncStatus").textContent = `🟢 Онлайн сесія: "${roomCode.toUpperCase()}"`;
+    $("syncStatus").className = "syncStatus online";
+
+    currentRoomRef.on("value", (snapshot) => {
+      const data = snapshot.val();
+      if(data && data.items){
+        sessionReport = Object.values(data.items);
+      } else {
+        sessionReport = [];
+      }
+      renderReport();
+    });
+  } else {
+    $("syncStatus").textContent = "⚠️ Локальний режим (без інтернету)";
+    $("syncStatus").className = "syncStatus offline";
+  }
 }
 
 function bindFastClick(elem, callback){
@@ -298,11 +358,7 @@ function buildLines(s){
     const isNum = /^\d/.test(m[0]);
     const susp = isNum && isSuspicious(m[0]) && !confirmedSuspicious.has(m.index + "_" + m[0]);
     tokens.push({
-      text:m[0],
-      start:m.index,
-      end:m.index+m[0].length,
-      isNum:isNum,
-      isSuspicious: susp
+      text:m[0], start:m.index, end:m.index+m[0].length, isNum:isNum, isSuspicious: susp
     });
   }
   
@@ -326,7 +382,6 @@ function render(){
 
   lines.forEach(item=>{
     const div=document.createElement("div");div.className="line";
-    
     item.tokens.forEach(t=>{
       const tokenContainer = t.isSuspicious ? document.createElement("span") : div;
       if(t.isSuspicious){
@@ -384,7 +439,7 @@ function render(){
     sc.scrollTop=sc.scrollHeight;
   });
 
-  updateInfo();updateIntermediate();renderReport();save();
+  updateInfo();updateIntermediate();saveLocalState();
 }
 
 function confirmSuspicious(){
@@ -452,29 +507,18 @@ function insert(v){
 
 function press(v){
   vibrate(12);
-
-  if(v!=="AC" && clearConfirmState){
-    resetAcButton();
-  }
+  if(v!=="AC" && clearConfirmState) resetAcButton();
 
   if(v==="AC"){
-    if(!input){
-      resetAcButton();
-      return;
-    }
+    if(!input){ resetAcButton(); return; }
     if(!clearConfirmState){
       clearConfirmState=true;
-      const btn=$("acBtn");
-      btn.textContent="ТОЧНО?";
-      btn.classList.add("danger");
+      const btn=$("acBtn"); btn.textContent="ТОЧНО?"; btn.classList.add("danger");
       vibrate([20, 40, 20]);
-      clearTimer=setTimeout(()=>{
-        resetAcButton();
-      },3000);
+      clearTimer=setTimeout(()=>resetAcButton(),3000);
       return;
     } else {
-      resetAcButton();
-      input="";cursorPos=0;resultShown=false;render();return;
+      resetAcButton(); input="";cursorPos=0;resultShown=false;render();return;
     }
   }
 
@@ -526,6 +570,7 @@ function calculate(){
   }catch{$("intermediateResult").textContent="Помилка"}
 }
 
+// ➕ Збереження в спільну хмару
 function addPositionToReport(){
   if(!input) return;
   try{
@@ -536,35 +581,40 @@ function addPositionToReport(){
     const dir = $("inputDirection").value.trim() || "Загальний";
     const sup = $("inputSupplier").value.trim() || "Без постачальника";
     const tmc = $("inputTmc").value.trim() || "Без коду ТМЦ";
+    const worker = $("inputWorkerName").value.trim() || "Комірник";
 
-    sessionReport.push({
-      id: Date.now(),
-      dir, sup, tmc,
+    const newItem = {
+      id: Date.now() + "_" + Math.random().toString(36).substr(2, 4),
+      dir, sup, tmc, worker,
       rollsCount: rolls.length,
       totalWeight: totalVal,
       details: expr
-    });
+    };
+
+    if(currentRoomRef){
+      currentRoomRef.child("items/" + newItem.id).set(newItem);
+    } else {
+      sessionReport.push(newItem);
+      renderReport();
+    }
 
     vibrate([20, 50, 20]);
     input = "";
     cursorPos = 0;
     render();
-    alert(`Збережено в місто/напрямок: "${dir}"\n${sup} — ${tmc} (${rolls.length} рул. / ${pretty(totalVal)} кг)`);
+    alert(`Збережено від (${worker}):\n📍 ${dir} -> ${sup}\n• ${tmc}: ${rolls.length} рул. = ${pretty(totalVal)} кг`);
   }catch(e){
     alert("Помилка додавання позиції");
   }
 }
 
-// Групування даних строго по містах/напрямках
 function getGroupedData(){
   const dirMap = {};
-  
   sessionReport.forEach(item => {
     if(!dirMap[item.dir]) dirMap[item.dir] = {};
     if(!dirMap[item.dir][item.sup]) dirMap[item.dir][item.sup] = [];
     dirMap[item.dir][item.sup].push(item);
   });
-
   return dirMap;
 }
 
@@ -576,13 +626,12 @@ function renderReport(){
   if(!wrap) return;
 
   if(!sessionReport.length){
-    wrap.innerHTML = '<div class="empty">Звіт порожній. Додайте позиції з калькулятора!</div>';
+    wrap.innerHTML = '<div class="empty">Звіт порожній.<br>Усі додані позиції з усіх телефонів з однаковим кодом сесії будуть з'являтися тут!</div>';
     return;
   }
 
   const grouped = getGroupedData();
   let html = "";
-
   let grandRollsExcludingPickup = 0;
   let grandWeightExcludingPickup = 0;
 
@@ -600,7 +649,10 @@ function renderReport(){
       let itemsHtml = grouped[dir][sup].map(item => {
         supRolls += item.rollsCount;
         supWeight += item.totalWeight;
-        return `<div class="reportItem">• <b>${item.tmc}</b>: ${item.rollsCount} рул. = <b>${pretty(item.totalWeight)} кг</b></div>`;
+        return `<div class="reportItem">
+          <span>• <b>${item.tmc}</b>: ${item.rollsCount} рул. = <b>${pretty(item.totalWeight)} кг</b></span>
+          <span class="authorTag">👤 ${item.worker}</span>
+        </div>`;
       }).join("");
 
       dirRolls += supRolls;
@@ -627,7 +679,6 @@ function renderReport(){
     </div>`;
   }
 
-  // Загальний блок для всіх міст крім Самовивозу
   html += `<div class="grandTotalCard">
     <div class="grandTotalTitle">🚚 ЗАГАЛОМ ПО ВІДВАНТАЖЕННЯХ (без Самовивозу):</div>
     <div class="grandTotalRow">• Всього рулонів: <b>${grandRollsExcludingPickup} рул.</b></div>
@@ -639,9 +690,9 @@ function renderReport(){
 
 function copyReportToClipboard(){
   if(!sessionReport.length){ alert("Немає даних для копіювання"); return; }
-  
   const grouped = getGroupedData();
-  let text = "📦 ЗВІТ ВІДБОРУ ТКАНИН\n\n";
+  const roomCode = ($("inputRoomCode").value.trim() || "default").toUpperCase();
+  let text = `📦 ЗВІТ ВІДБОРУ ТКАНИН (Сесія: ${roomCode})\n\n`;
 
   let grandRollsExcludingPickup = 0;
   let grandWeightExcludingPickup = 0;
@@ -660,7 +711,7 @@ function copyReportToClipboard(){
       grouped[dir][sup].forEach(item => {
         supRolls += item.rollsCount;
         supWeight += item.totalWeight;
-        text += `  • ${item.tmc} — ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг\n`;
+        text += `  • ${item.tmc} — ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг (👤 ${item.worker})\n`;
       });
 
       dirRolls += supRolls;
@@ -683,16 +734,34 @@ function copyReportToClipboard(){
 
   navigator.clipboard.writeText(text).then(() => {
     vibrate(20);
-    alert("Звіт скопійовано в буфер обміну!");
+    alert("Спільний звіт скопійовано в буфер обміну!");
   });
 }
 
 function clearReport(){
-  if(confirm("Очистити весь поточний звіт відбору?")){
-    sessionReport = [];
-    save();
-    renderReport();
+  if(confirm("Очистити СПІЛЬНУ сесію для ВСІХ комірників?")){
+    if(currentRoomRef){
+      currentRoomRef.remove();
+    } else {
+      sessionReport = [];
+      renderReport();
+    }
   }
+}
+
+function openHistory(){vibrate(15);$("historyModal").classList.add("show");renderHistory()}
+function closeHistory(){vibrate(15);$("historyModal").classList.remove("show")}
+function clearHistory(){
+  vibrate(20);
+  if(confirm("Очистить историю калькулятора?")){
+    history=[];renderHistory();
+  }
+}
+
+function renderHistory(){
+  const list=$("historyList");
+  if(!history.length){list.innerHTML='<div class="empty">История пуста</div>';return}
+  list.innerHTML=history.map((x,i)=>`<div class="historyItem"><div class="historyExpr">${i+1}. ${x.expression} = ${x.result}</div><div class="historyMeta">Чисел: ${x.count} · ${x.time}</div></div>`).join("");
 }
 
 /* Таби */
@@ -710,21 +779,6 @@ bindFastClick($("tabReport"), () => {
   $("viewCalc").classList.remove("active");
   renderReport();
 });
-
-function openHistory(){vibrate(15);$("historyModal").classList.add("show");renderHistory()}
-function closeHistory(){vibrate(15);$("historyModal").classList.remove("show")}
-function clearHistory(){
-  vibrate(20);
-  if(confirm("Очистить всю историю?")){
-    history=[];save();renderHistory();updateInfo();
-  }
-}
-
-function renderHistory(){
-  const list=$("historyList");
-  if(!history.length){list.innerHTML='<div class="empty">История пуста</div>';return}
-  list.innerHTML=history.map((x,i)=>`<div class="historyItem"><div class="historyExpr">${i+1}. ${x.expression} = ${x.result}</div><div class="historyMeta">Чисел: ${x.count} · ${x.time}</div></div>`).join("");
-}
 
 document.querySelectorAll('.keys button.key').forEach(btn => {
   bindFastClick(btn, () => {
@@ -750,11 +804,18 @@ $("displayScroller").addEventListener("click",e=>{
   resultShown=false;render();
 });
 
-["inputDirection", "inputSupplier", "inputTmc"].forEach(id => {
-  $(id).addEventListener("input", save);
+["inputDirection", "inputSupplier", "inputTmc", "inputWorkerName"].forEach(id => {
+  $(id).addEventListener("input", saveLocalState);
 });
 
-load();render();renderHistory();
+$("inputRoomCode").addEventListener("change", () => {
+  saveLocalState();
+  connectToRoom();
+});
+
+loadLocalState();
+render();
+connectToRoom();
 </script>
 </body>
 </html>
