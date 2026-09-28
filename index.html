@@ -28,7 +28,6 @@ body{display:flex;justify-content:center}
 .formRow{display:flex;gap:8px;align-items:center}
 .formInput{flex:1;background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;padding:8px 10px;color:#fff;font-size:13px;outline:none}
 .formInput::placeholder{color:#7c7c80}
-.formSelect{background:#2c2c2e;border:1px solid #3a3a3c;border-radius:10px;padding:8px;color:#fff;font-size:13px;outline:none}
 
 .top{height:40px;display:flex;justify-content:space-between;align-items:flex-start;flex:none}
 .info{font-size:13px;line-height:1.3;color:#9a9a9f}
@@ -73,7 +72,7 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 .key.equals{background:#ff7a00;color:#fff;box-shadow:0 3px 8px rgba(255,122,0,.18)}
 .key.danger{background:#ff3b30!important;color:#fff!important;font-size:clamp(11px,3.2vw,14px)!important;font-weight:bold}
 
-/* Модалки та Звіти */
+/* Модалки */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.98);z-index:20;padding:18px 16px}
 .modal.show{display:flex;flex-direction:column}
 .modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
@@ -88,10 +87,18 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 
 /* Вкладка звітів */
 .reportWrap{flex:1;overflow-y:auto;padding-right:2px}
-.reportGroup{background:#1c1c1e;border-radius:14px;padding:12px;margin-bottom:10px}
-.reportGroupTitle{font-size:16px;font-weight:bold;color:#ff7a00;margin-bottom:6px;border-bottom:1px solid #2c2c2e;padding-bottom:4px}
-.reportItem{margin-bottom:8px;font-size:13px;line-height:1.4}
-.reportItemTmc{font-weight:600;color:#34c759}
+.reportGroup{background:#1c1c1e;border-radius:14px;padding:12px;margin-bottom:12px;border:1px solid #2c2c2e}
+.reportGroupTitle{font-size:16px;font-weight:bold;color:#ff7a00;margin-bottom:8px;border-bottom:1px solid #3a3a3c;padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.supplierBlock{background:#262628;border-radius:10px;padding:8px 10px;margin-bottom:8px}
+.supplierTitle{font-size:14px;font-weight:bold;color:#34c759;margin-bottom:4px}
+.supplierSubtotal{font-size:12px;color:#aaa;font-weight:600;margin-top:4px;border-top:1px dashed #3a3a3c;padding-top:4px}
+.reportItem{margin-bottom:4px;font-size:13px;line-height:1.4}
+.dirTotal{font-size:13px;font-weight:bold;color:#ff9f0a;margin-top:8px;padding-top:6px;border-top:1px solid #3a3a3c;text-align:right}
+
+.grandTotalCard{background:#2c1400;border:1px solid #ff7a00;border-radius:14px;padding:12px;margin-top:14px;margin-bottom:10px}
+.grandTotalTitle{font-size:14px;font-weight:bold;color:#ff7a00;margin-bottom:6px}
+.grandTotalRow{font-size:13px;color:#fff;line-height:1.5}
+
 .reportActions{display:flex;gap:8px;margin-top:8px}
 .actionBtn{flex:1;border:0;border-radius:10px;padding:10px;font-size:13px;font-weight:600;touch-action:none;cursor:pointer}
 .actionBtn.copy{background:#0a84ff;color:#fff}
@@ -100,7 +107,6 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
 </head>
 <body>
 <div class="app">
-  <!-- Перемикач режимів -->
   <div class="tabs">
     <button class="tabBtn active" id="tabCalc">🧮 Калькулятор</button>
     <button class="tabBtn" id="tabReport">📋 Напрями & Звіт (<span id="repCount">0</span>)</button>
@@ -110,7 +116,7 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
   <div class="view active" id="viewCalc">
     <div class="sessionCard">
       <div class="formRow">
-        <input type="text" id="inputDirection" class="formInput" placeholder="Напрямок (напр. Маршрут 1, НП)" value="Загальний">
+        <input type="text" id="inputDirection" class="formInput" placeholder="Місто / Напрямок (Харків...)" value="Харків">
         <input type="text" id="inputSupplier" class="formInput" placeholder="Постачальник / Клієнт">
       </div>
       <div class="formRow">
@@ -178,11 +184,9 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
     </div>
   </div>
 
-  <!-- Вкладка 2: Звіти по Напрямках -->
+  <!-- Вкладка 2: Звіти -->
   <div class="view" id="viewReport">
-    <div class="reportWrap" id="reportContent">
-      <!-- Тут динамічно будуються звіти -->
-    </div>
+    <div class="reportWrap" id="reportContent"></div>
     <div class="reportActions">
       <button class="actionBtn copy" id="btnCopyReport">📋 Скопіювати звіт</button>
       <button class="actionBtn clear" id="btnClearReport">🗑 Очистити сесію</button>
@@ -190,7 +194,6 @@ button.key:active{transform:scale(.95);filter:brightness(1.3)}
   </div>
 </div>
 
-<!-- Модальне вікно історії калькулятора -->
 <div class="modal" id="historyModal">
   <div class="modalHead">
     <div class="modalTitle">История</div>
@@ -207,7 +210,7 @@ let input="";
 let cursorPos=0;
 let resultShown=false;
 let history=[];
-let sessionReport=[]; // Масив підсумованих позицій по напрямках
+let sessionReport=[];
 let clearConfirmState=false;
 let clearTimer=null;
 let confirmedSuspicious = new Set();
@@ -223,22 +226,22 @@ function vibrate(ms=12){
 
 function save(){
   try{
-    localStorage.setItem("anton29253_state_v8",JSON.stringify({
+    localStorage.setItem("anton29253_state_v10",JSON.stringify({
       input,resultShown,cursorPos,
       dir:$("inputDirection").value,
       sup:$("inputSupplier").value,
       tmc:$("inputTmc").value
     }));
-    localStorage.setItem("anton29253_history_v8",JSON.stringify(history));
-    localStorage.setItem("anton29253_report_v8",JSON.stringify(sessionReport));
+    localStorage.setItem("anton29253_history_v10",JSON.stringify(history));
+    localStorage.setItem("anton29253_report_v10",JSON.stringify(sessionReport));
   }catch(e){}
 }
 
 function load(){
   try{
-    const s=JSON.parse(localStorage.getItem("anton29253_state_v8")||"null");
-    const h=JSON.parse(localStorage.getItem("anton29253_history_v8")||"[]");
-    const r=JSON.parse(localStorage.getItem("anton29253_report_v8")||"[]");
+    const s=JSON.parse(localStorage.getItem("anton29253_state_v10")||"null");
+    const h=JSON.parse(localStorage.getItem("anton29253_history_v10")||"[]");
+    const r=JSON.parse(localStorage.getItem("anton29253_report_v10")||"[]");
     if(s){
       input=typeof s.input==="string"?s.input:"";
       resultShown=!!s.resultShown;
@@ -523,7 +526,6 @@ function calculate(){
   }catch{$("intermediateResult").textContent="Помилка"}
 }
 
-/* Логіка Напрямків та Звіту */
 function addPositionToReport(){
   if(!input) return;
   try{
@@ -540,18 +542,30 @@ function addPositionToReport(){
       dir, sup, tmc,
       rollsCount: rolls.length,
       totalWeight: totalVal,
-      details: expr,
-      time: new Date().toLocaleTimeString("uk-UA", {hour:'2-digit', minute:'2-digit'})
+      details: expr
     });
 
     vibrate([20, 50, 20]);
     input = "";
     cursorPos = 0;
     render();
-    alert(`Збережено в напрямок: "${dir}"\nТМЦ: ${tmc} (${rolls.length} рул. / ${totalVal} кг)`);
+    alert(`Збережено в місто/напрямок: "${dir}"\n${sup} — ${tmc} (${rolls.length} рул. / ${pretty(totalVal)} кг)`);
   }catch(e){
     alert("Помилка додавання позиції");
   }
+}
+
+// Групування даних строго по містах/напрямках
+function getGroupedData(){
+  const dirMap = {};
+  
+  sessionReport.forEach(item => {
+    if(!dirMap[item.dir]) dirMap[item.dir] = {};
+    if(!dirMap[item.dir][item.sup]) dirMap[item.dir][item.sup] = [];
+    dirMap[item.dir][item.sup].push(item);
+  });
+
+  return dirMap;
 }
 
 function renderReport(){
@@ -566,33 +580,59 @@ function renderReport(){
     return;
   }
 
-  // Групування по Напрямках
-  const groups = {};
-  sessionReport.forEach(item => {
-    if(!groups[item.dir]) groups[item.dir] = [];
-    groups[item.dir].push(item);
-  });
-
+  const grouped = getGroupedData();
   let html = "";
-  for(const dir in groups){
+
+  let grandRollsExcludingPickup = 0;
+  let grandWeightExcludingPickup = 0;
+
+  for(const dir in grouped){
     let dirRolls = 0;
     let dirWeight = 0;
-    
-    let itemsHtml = groups[dir].map(item => {
-      dirRolls += item.rollsCount;
-      dirWeight += item.totalWeight;
-      return `<div class="reportItem">
-        <span class="reportItemTmc">${item.tmc}</span> (${item.sup}) — <b>${item.rollsCount} рул.</b> / <b>${pretty(item.totalWeight)} кг</b>
-        <div style="font-size:11px;color:#777;">${pretty(item.details)}</div>
+    const isPickup = dir.toLowerCase().includes("самовив") || dir.toLowerCase().includes("самовыв");
+
+    let suppliersHtml = "";
+
+    for(const sup in grouped[dir]){
+      let supRolls = 0;
+      let supWeight = 0;
+
+      let itemsHtml = grouped[dir][sup].map(item => {
+        supRolls += item.rollsCount;
+        supWeight += item.totalWeight;
+        return `<div class="reportItem">• <b>${item.tmc}</b>: ${item.rollsCount} рул. = <b>${pretty(item.totalWeight)} кг</b></div>`;
+      }).join("");
+
+      dirRolls += supRolls;
+      dirWeight += supWeight;
+
+      suppliersHtml += `<div class="supplierBlock">
+        <div class="supplierTitle">🏢 ${sup}</div>
+        ${itemsHtml}
+        <div class="supplierSubtotal">👉 Всього по "${sup}": <b>${supRolls} рул.</b> | <b>${pretty(Number(supWeight.toFixed(2)))} кг</b></div>
       </div>`;
-    }).join("");
+    }
+
+    if(!isPickup){
+      grandRollsExcludingPickup += dirRolls;
+      grandWeightExcludingPickup += dirWeight;
+    }
 
     html += `<div class="reportGroup">
-      <div class="reportGroupTitle">📍 Напрям: ${dir}</div>
-      <div style="font-size:12px;color:#aaa;margin-bottom:8px;">Всього: <b>${dirRolls} рул.</b> | <b>${pretty(dirWeight.toFixed(2))} кг</b></div>
-      ${itemsHtml}
+      <div class="reportGroupTitle">
+        <span>📍 НАПРЯМ: ${dir}</span>
+      </div>
+      ${suppliersHtml}
+      <div class="dirTotal">📊 Разом по "${dir}": <b>${dirRolls} рул.</b> | <b>${pretty(Number(dirWeight.toFixed(2)))} кг</b></div>
     </div>`;
   }
+
+  // Загальний блок для всіх міст крім Самовивозу
+  html += `<div class="grandTotalCard">
+    <div class="grandTotalTitle">🚚 ЗАГАЛОМ ПО ВІДВАНТАЖЕННЯХ (без Самовивозу):</div>
+    <div class="grandTotalRow">• Всього рулонів: <b>${grandRollsExcludingPickup} рул.</b></div>
+    <div class="grandTotalRow">• Загальна вага: <b>${pretty(Number(grandWeightExcludingPickup.toFixed(2)))} кг</b></div>
+  </div>`;
 
   wrap.innerHTML = html;
 }
@@ -600,20 +640,46 @@ function renderReport(){
 function copyReportToClipboard(){
   if(!sessionReport.length){ alert("Немає даних для копіювання"); return; }
   
+  const grouped = getGroupedData();
   let text = "📦 ЗВІТ ВІДБОРУ ТКАНИН\n\n";
-  const groups = {};
-  sessionReport.forEach(item => {
-    if(!groups[item.dir]) groups[item.dir] = [];
-    groups[item.dir].push(item);
-  });
 
-  for(const dir in groups){
-    text += `📍 НАПРЯМ: ${dir}\n`;
-    groups[dir].forEach(item => {
-      text += `• ${item.tmc} (${item.sup}): ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг\n`;
-    });
-    text += `\n`;
+  let grandRollsExcludingPickup = 0;
+  let grandWeightExcludingPickup = 0;
+
+  for(const dir in grouped){
+    text += `📍 НАПРЯМ: ${dir}\n------------------------------\n`;
+    let dirRolls = 0;
+    let dirWeight = 0;
+    const isPickup = dir.toLowerCase().includes("самовив") || dir.toLowerCase().includes("самовыв");
+
+    for(const sup in grouped[dir]){
+      text += `🏢 Постачальник: ${sup}\n`;
+      let supRolls = 0;
+      let supWeight = 0;
+
+      grouped[dir][sup].forEach(item => {
+        supRolls += item.rollsCount;
+        supWeight += item.totalWeight;
+        text += `  • ${item.tmc} — ${item.rollsCount} рул. = ${pretty(item.totalWeight)} кг\n`;
+      });
+
+      dirRolls += supRolls;
+      dirWeight += supWeight;
+      text += `  👉 Всього по "${sup}": ${supRolls} рул. | ${pretty(Number(supWeight.toFixed(2)))} кг\n\n`;
+    }
+
+    if(!isPickup){
+      grandRollsExcludingPickup += dirRolls;
+      grandWeightExcludingPickup += dirWeight;
+    }
+
+    text += `📊 Разом по "${dir}": ${dirRolls} рул. | ${pretty(Number(dirWeight.toFixed(2)))} кг\n\n\n`;
   }
+
+  text += `==============================\n`;
+  text += `🚚 ЗАГАЛОМ ПО ВІДВАНТАЖЕННЯХ (без Самовивозу):\n`;
+  text += `• Всього рулонів: ${grandRollsExcludingPickup} рул.\n`;
+  text += `• Загальна вага: ${pretty(Number(grandWeightExcludingPickup.toFixed(2)))} кг\n`;
 
   navigator.clipboard.writeText(text).then(() => {
     vibrate(20);
@@ -645,7 +711,6 @@ bindFastClick($("tabReport"), () => {
   renderReport();
 });
 
-/* Обробка подій */
 function openHistory(){vibrate(15);$("historyModal").classList.add("show");renderHistory()}
 function closeHistory(){vibrate(15);$("historyModal").classList.remove("show")}
 function clearHistory(){
